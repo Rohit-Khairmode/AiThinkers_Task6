@@ -1,0 +1,129 @@
+// components/AppointmentFormModal.tsx
+import ModalWindow from "@/components/Modal";
+import { useAppDispatch } from "@/lib/hooks";
+import { AppointmentFormData } from "@/lib/zodSchemas";
+import { addAppointment, updateAppointment } from "@/store/appointment/slice";
+import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+
+type Props = {
+  open: boolean;
+  close: (val: boolean) => void;
+  defaultData?: AppointmentFormData | null;
+};
+
+const defaultFormData: AppointmentFormData = {
+  serviceType: "",
+  appointmentType: "online",
+  scheduledAt: "",
+  serviceProvider: "",
+  note: "",
+};
+
+const AppointmentFormModal = ({ open, close, defaultData }: Props) => {
+  const [formData, setFormData] =
+    useState<AppointmentFormData>(defaultFormData);
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof AppointmentFormData, string>>
+  >({});
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (defaultData) {
+      setFormData(defaultData);
+    } else {
+      setFormData(defaultFormData);
+    }
+  }, [defaultData]);
+
+  const handleChange = (field: keyof AppointmentFormData, value: string) => {
+    setFormData({ ...formData, [field]: value });
+  };
+  const handleSubmit = (data: AppointmentFormData) => {
+    try {
+      if (typeof data._id === "string") {
+        const updatedData = { ...data, _id: data._id };
+        dispatch(updateAppointment(updatedData));
+        toast.success("Appointment updated successfully");
+      } else {
+        const { _id, ...newData } = data;
+        dispatch(addAppointment({ ...newData }));
+        toast.success("Appointment added successfully");
+      }
+      close(false);
+      setFormData(defaultFormData);
+    } catch (error) {
+      console.error("error while updating or adding appointment", error);
+      toast.error("error  while updating or adding appointment");
+    }
+  };
+
+  return (
+    <ModalWindow
+      open={open}
+      close={() => {
+        setFormData(defaultFormData);
+        close(false);
+      }}
+    >
+      <Typography variant="h6" mb={2}>
+        {formData._id ? "Update Appointment" : "Create Appointment"}
+      </Typography>
+      <Stack spacing={2}>
+        {/* <TextField
+          label="User ID"
+          value={userId}
+          //   onChange={(e) => handleChange("userId", e.target.value)}
+          //   error={!!errors.userId}
+          //   helperText={errors.userId}
+          sx={{
+            display: "none",
+          }}
+        /> */}
+        <TextField
+          label="Service Type"
+          value={formData.serviceType}
+          onChange={(e) => handleChange("serviceType", e.target.value)}
+          error={!!errors.serviceType}
+          helperText={errors.serviceType}
+        />
+        <TextField
+          select
+          label="Appointment Type"
+          value={formData.appointmentType}
+          onChange={(e) => handleChange("appointmentType", e.target.value)}
+        >
+          <MenuItem value="online">Online</MenuItem>
+          <MenuItem value="in-person">In Person</MenuItem>
+        </TextField>
+        <TextField
+          label="Scheduled At"
+          type="datetime-local"
+          value={formData.scheduledAt}
+          onChange={(e) => handleChange("scheduledAt", e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          error={!!errors.scheduledAt}
+          helperText={errors.scheduledAt}
+        />
+        <TextField
+          label="Service Provider"
+          value={formData.serviceProvider}
+          onChange={(e) => handleChange("serviceProvider", e.target.value)}
+          error={!!errors.serviceProvider}
+          helperText={errors.serviceProvider}
+        />
+        <TextField
+          label="Note"
+          value={formData.note || ""}
+          onChange={(e) => handleChange("note", e.target.value)}
+        />
+        <Button variant="contained" onClick={() => handleSubmit(formData)}>
+          {formData._id ? "Update" : "Create"}
+        </Button>
+      </Stack>
+    </ModalWindow>
+  );
+};
+
+export default AppointmentFormModal;
