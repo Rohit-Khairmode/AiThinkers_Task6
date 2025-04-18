@@ -42,7 +42,6 @@ export const registerUser: RequestHandler = asyncHandler(
           error.message,
         ])
       );
-      console.log("Validation errors:", errorMessages);
       throw new ApiError(400, "Validation error", errorMessages); //400 bad request
     }
 
@@ -69,7 +68,6 @@ export const registerUser: RequestHandler = asyncHandler(
       if (!profileImageLocalPath) {
         throw new ApiError(400, "Profile image file is required");
       }
-      console.log("profileImageLocalPath", profileImageLocalPath);
 
       // Upload to cloudinary
       const profileImage = await uploadOnCloudinary(profileImageLocalPath);
@@ -125,7 +123,7 @@ export const loginUser: RequestHandler = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    throw new ApiError(404, "User does not exist");
+    throw new ApiError(404, "Invalid user credentials");
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
@@ -204,7 +202,6 @@ export const updateUserInfo: RequestHandler = asyncHandler(async (req, res) => {
         error.message,
       ])
     );
-    console.log("Validation errors:", errorMessages);
     throw new ApiError(400, "Validation error", errorMessages); //400 bad request
   }
   const validatedData = validationResult.data;
@@ -228,14 +225,12 @@ export const updateUserInfo: RequestHandler = asyncHandler(async (req, res) => {
 export const updateUserProfileImage: RequestHandler = asyncHandler(
   async (req, res) => {
     let profileImageUrl;
-    console.log(req.file);
     if (req.file) {
       const profileImageLocalPath = req.file?.path;
 
       if (!profileImageLocalPath) {
         throw new ApiError(400, "Profile image file is required");
       }
-      console.log("profileImageLocalPath", profileImageLocalPath);
 
       // Upload to cloudinary
       const profileImage = await uploadOnCloudinary(profileImageLocalPath);

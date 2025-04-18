@@ -10,18 +10,21 @@ import {
   appointmentAdded,
   appointmentUpdated,
   appointmentDeleted,
+  errorfetchAppointments,
+  errorAddAppointment,
+  errorDeleteAppointment,
+  errorUpdateAppointment,
 } from "./slice";
 import { Appointment } from "./slice";
 import { PayloadAction } from "@reduxjs/toolkit";
 
 function* handlefetchAppointmentsRequest(): Generator<any, void, any> {
-  console.log("handlefetchAppointmentsRequest");
   try {
     const response = yield call(api.get, "/appointments");
-    console.log("response", response);
     yield put(setAppointments(response.data.data));
   } catch (error) {
     console.error("Failed to fetch appointments:", error);
+    yield put(errorfetchAppointments());
   }
 }
 
@@ -29,11 +32,11 @@ function* handleAddAppointment(
   action: PayloadAction<Omit<Appointment, "_id">>
 ): Generator<any, void, any> {
   try {
-    console.log("action.payload", action.payload);
     const response = yield call(api.post, "/appointments", action.payload);
     yield put(appointmentAdded(response.data.data));
   } catch (error) {
     console.error("Failed to add appointment:", error);
+    yield put(errorAddAppointment());
   }
 }
 
@@ -46,6 +49,7 @@ function* handleUpdateAppointment(
     yield put(appointmentUpdated(response.data.data));
   } catch (error) {
     console.error("Failed to update appointment:", error);
+    yield put(errorUpdateAppointment());
   }
 }
 
@@ -55,6 +59,7 @@ function* handleDeleteAppointment(action: PayloadAction<string>) {
     yield put(appointmentDeleted(action.payload));
   } catch (error) {
     console.error("Failed to delete appointment:", error);
+    yield put(errorDeleteAppointment());
   }
 }
 

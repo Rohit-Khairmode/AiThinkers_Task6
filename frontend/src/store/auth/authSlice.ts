@@ -1,6 +1,6 @@
 "use client";
 import { z } from "zod";
-import { userRegistrationSchema } from "@/lib/zodSchemas"; // adjust path if needed
+import { userRegistrationSchema } from "@/lib/zodSchemas";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export const authSchema = userRegistrationSchema
@@ -9,7 +9,7 @@ export const authSchema = userRegistrationSchema
     profileImage: true,
   })
   .extend({
-    profileImage: z.string().url().optional(), // or just z.string() if not URL
+    profileImage: z.string().url().optional(),
     _id: z.string(),
     username: z.string(),
   });
@@ -21,14 +21,12 @@ interface AuthState {
   isloading: boolean;
 }
 
-const initialState: AuthState = {
-  user: null,
-  isloading: true,
-};
-
 const authSlice = createSlice({
   name: "auth",
-  initialState,
+  initialState: {
+    user: null,
+    isloading: true,
+  } as AuthState,
   reducers: {
     setUser: (state, action: PayloadAction<AuthSchema>) => {
       state.user = action.payload;

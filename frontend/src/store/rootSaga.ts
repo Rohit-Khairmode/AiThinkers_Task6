@@ -1,4 +1,3 @@
-// store/sagas/rootSaga.ts
 import { all, fork } from "redux-saga/effects";
 import appointmentSaga from "@/store/appointment/saga";
 

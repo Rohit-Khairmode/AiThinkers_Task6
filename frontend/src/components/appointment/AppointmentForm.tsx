@@ -1,11 +1,12 @@
 // components/AppointmentFormModal.tsx
 import ModalWindow from "@/components/Modal";
-import { useAppDispatch } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { AppointmentFormData } from "@/lib/zodSchemas";
 import { addAppointment, updateAppointment } from "@/store/appointment/slice";
 import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
 type Props = {
   open: boolean;
@@ -28,6 +29,7 @@ const AppointmentFormModal = ({ open, close, defaultData }: Props) => {
     Partial<Record<keyof AppointmentFormData, string>>
   >({});
   const dispatch = useAppDispatch();
+  const error = useAppSelector((state) => state.appointment.error);
 
   useEffect(() => {
     if (defaultData) {
@@ -41,22 +43,19 @@ const AppointmentFormModal = ({ open, close, defaultData }: Props) => {
     setFormData({ ...formData, [field]: value });
   };
   const handleSubmit = (data: AppointmentFormData) => {
-    try {
-      if (typeof data._id === "string") {
-        const updatedData = { ...data, _id: data._id };
-        dispatch(updateAppointment(updatedData));
-        toast.success("Appointment updated successfully");
-      } else {
-        const { _id, ...newData } = data;
-        dispatch(addAppointment({ ...newData }));
-        toast.success("Appointment added successfully");
-      }
-      close(false);
-      setFormData(defaultFormData);
-    } catch (error) {
-      console.error("error while updating or adding appointment", error);
-      toast.error("error  while updating or adding appointment");
+    if (typeof data._id === "string") {
+      const updatedData = { ...data, _id: data._id };
+      dispatch(updateAppointment(updatedData));
+      if (error.updateAppointment) toast.error(error.updateAppointment);
+      else toast.success("Appointment updated successfully");
+    } else {
+      const { _id, ...newData } = data;
+      dispatch(addAppointment({ ...newData }));
+      if (error.addAppointment) toast.error(error.addAppointment);
+      else toast.success("Appointment added successfully");
     }
+    close(false);
+    setFormData(defaultFormData);
   };
 
   return (
@@ -71,16 +70,6 @@ const AppointmentFormModal = ({ open, close, defaultData }: Props) => {
         {formData._id ? "Update Appointment" : "Create Appointment"}
       </Typography>
       <Stack spacing={2}>
-        {/* <TextField
-          label="User ID"
-          value={userId}
-          //   onChange={(e) => handleChange("userId", e.target.value)}
-          //   error={!!errors.userId}
-          //   helperText={errors.userId}
-          sx={{
-            display: "none",
-          }}
-        /> */}
         <TextField
           label="Service Type"
           value={formData.serviceType}

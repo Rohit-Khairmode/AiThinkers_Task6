@@ -1,14 +1,17 @@
 "use client";
 import { VisuallyHiddenInput } from "@/components/auth/RegistrationForm";
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import ProfilePageSkeleton from "@/components/ui/ProfilePageSkeleton";
 import UserPublicDetails from "@/components/UserPublicDetails";
 import { useForm } from "@/hooks/useForm";
 import api from "@/lib/api";
 import { useAppDispatch } from "@/lib/hooks";
+import { imageFileSchema } from "@/lib/zodSchemas";
 import { RootState } from "@/store";
 import { setUser } from "@/store/auth/authSlice";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import {
+  Avatar,
   Box,
   Button,
   FormControlLabel,
@@ -18,11 +21,13 @@ import {
   RadioGroup,
   Typography,
 } from "@mui/material";
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { styles } from "./profile.styles";
 import { useSelector } from "react-redux";
+import RadioButtonGroup from "@/components/ui/RadioButtonGroup";
+import { preferredCommunicationOptions } from "@/lib/constant";
 
 function ProfilePage() {
   const { user, isloading } = useSelector((state: RootState) => state.auth);
@@ -34,20 +39,18 @@ function ProfilePage() {
     handleChange,
     handleSelectChange,
     profileImagePreview,
-    handleprofileImageChange,
     loading,
     setLoading,
     setFormData,
   } = useForm();
+  const [imageLoading, setImageLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     setLoading(true);
     try {
       e.preventDefault();
-      console.log("Form submitted:", formData);
       const res = await api.put("/users/update", formData);
       toast.success("Profile updated successfully");
-      console.log("Profile updated successfully:", res.data.data);
       dispatch(setUser({ ...res.data.data, profileImage: user?.profileImage }));
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -56,19 +59,20 @@ function ProfilePage() {
       setLoading(false);
     }
   }
-  async function handleProfileImageUpload() {
-    setLoading(true);
+  async function handleProfileImageUpload(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = e.target.files?.[0];
+    const result = imageFileSchema.safeParse(file);
+    if (!result.success) {
+      toast.error(result.error.errors[0].message);
+      return;
+    }
+    setImageLoading(true);
     try {
-      const curData = new FormData();
-      console.log("formData", formData.profileImage instanceof File);
-      if (formData.profileImage instanceof File) {
-        curData.append("profileImage", formData.profileImage);
-      } else {
-        toast.error("Please select a valid profile image.");
-      }
       const res = await api.put(
         "/users/update/profile-image",
-        { profileImage: formData.profileImage },
+        { profileImage: file },
         {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -76,7 +80,6 @@ function ProfilePage() {
         }
       );
       toast.success("Profile image updated successfully");
-      console.log("Profile image updated successfully:", res.data.data);
       dispatch(
         setUser({ ...res.data.data, profileImage: res.data.data.profileImage })
       );
@@ -84,13 +87,13 @@ function ProfilePage() {
       console.error("Error updating profile image:", error);
       toast.error("Failed to update profile image");
     } finally {
-      setLoading(false);
+      setImageLoading(false);
     }
   }
   useEffect(() => {
     if (user) setFormData(user);
   }, [user]);
-  if (isloading) return <Typography>Loading...</Typography>;
+  if (isloading) return <ProfilePageSkeleton />;
   if (!user)
     return (
       <Typography>
@@ -100,25 +103,16 @@ function ProfilePage() {
 
   return (
     <>
-      <Box sx={{ backgroundColor: "#00BCD4", py: 4, px: 8 }}>
+      <Box className={styles.bannerBox}>
         <Typography variant="h4" color="white">
           User Details
         </Typography>
       </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          gap: 2,
-          p: 4,
-          justifyContent: "center",
-          marginX: "auto",
-        }}
-      >
+      <Box className={styles.contentBox}>
         <Box
           component="form"
           onSubmit={handleSubmit}
-          sx={{ flex: 1, maxWidth: 600, mx: "auto" }}
+          className={styles.profileDetailsForm}
         >
           <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
             <UserPublicDetails
@@ -137,20 +131,9 @@ function ProfilePage() {
                 onChange={handleChange}
                 row
               >
-                <FormControlLabel
-                  value="email"
-                  control={<Radio />}
-                  label="Email"
-                />
-                <FormControlLabel
-                  value="phone"
-                  control={<Radio />}
-                  label="Phone"
-                />
-                <FormControlLabel
-                  value="both"
-                  control={<Radio />}
-                  label="Both"
+                <RadioButtonGroup
+                  options={preferredCommunicationOptions}
+                  checkedOption={formData.preferredCommunication || ""}
                 />
               </RadioGroup>
               {errors.preferredCommunication && (
@@ -162,63 +145,40 @@ function ProfilePage() {
 
             <Box sx={{ mb: 3 }}>
               <PrimaryButton
+                loading={loading}
                 label={loading ? "Updating..." : "Update Profile"}
               />
             </Box>
           </Paper>
         </Box>
 
-        <Box
-          sx={{
-            flexShrink: 0,
-            minWidth: 300,
-            maxWidth: 400,
-            mx: "auto",
-          }}
-        >
-          <Paper
-            elevation={3}
-            sx={{
-              p: 3,
-              borderRadius: 2,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 2,
-              textAlign: "center",
-            }}
-          >
+        <Box className={"md:mx-auto"}>
+          <Paper elevation={3} className={styles.profileImageBox}>
             <Typography variant="h6" gutterBottom>
               Profile Picture
             </Typography>
-            <Image
+            <Avatar
+              alt="Remy Sharp"
+              className={styles.profileImage}
               src={profileImagePreview || user.profileImage || "/profile.webp"}
-              alt="Profile"
-              width={200}
-              height={200}
-              style={{ borderRadius: "50%", objectFit: "cover" }}
             />
-            <Box
-              sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}
-            >
+
+            <Box>
               <Button
                 component="label"
                 variant="contained"
                 startIcon={<CloudUploadIcon />}
                 sx={{ mt: 2 }}
+                loading={imageLoading}
+                disabled={imageLoading}
               >
                 Change Photo
                 <VisuallyHiddenInput
                   type="file"
-                  onChange={handleprofileImageChange}
+                  onChange={handleProfileImageUpload}
                   accept="image/*"
                 />
               </Button>
-              <PrimaryButton
-                onClick={handleProfileImageUpload}
-                label={loading ? "Uploading..." : "Upload Image"}
-                style={{ marginTop: 2, borderRadius: "none" }}
-              />
             </Box>
           </Paper>
         </Box>

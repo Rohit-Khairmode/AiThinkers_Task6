@@ -17,13 +17,10 @@ export default function AuthProvider({
   const router = useRouter();
   const user = useSelector((state: RootState) => state.auth.user);
   const dispatch = useAppDispatch();
-  console.log("user authProvider", user);
-
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await api.get("/users/me");
-        console.log("Login response:", response.data.data);
         dispatch(setUser(response.data.data));
       } catch (err) {
         dispatch(logout());

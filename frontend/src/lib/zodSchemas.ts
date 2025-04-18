@@ -1,12 +1,17 @@
 import { z } from "zod";
 export const passwordResetSchema = z.object({
-  token: z.string().min(1),
+  token: z.string().min(1, {
+    message: "Token is required. Genrate from forgot password page",
+  }),
   password: z
     .string()
-    .regex(
-      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/,
-      "Password must be at least 8 characters long and include at least one uppercase letter and one special character"
-    ),
+    .min(8, { message: "Password must be minimum 8 characters long" })
+    .refine((val) => /[A-Z]/.test(val), {
+      message: "Must have 1 capital letter",
+    })
+    .refine((val) => /[!@#$%^&*]/.test(val), {
+      message: "Must contain 1 special character",
+    }),
 });
 
 export const userRegistrationSchema = z.object({
@@ -31,10 +36,13 @@ export const userRegistrationSchema = z.object({
   email: z.string().trim().email("Invalid email format"),
   password: z
     .string()
-    .regex(
-      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/,
-      "Password must be at least 8 characters long and include at least one uppercase letter and one special character"
-    ),
+    .min(8, { message: "Password must be minimum 8 characters long" })
+    .refine((val) => /[A-Z]/.test(val), {
+      message: "Must have 1 capital letter",
+    })
+    .refine((val) => /[!@#$%^&*]/.test(val), {
+      message: "Must contain 1 special character",
+    }),
   preferredCommunication: z.enum(["email", "phone", "both"]).default("email"),
   termsAccepted: z.boolean().default(true),
   profileImage: z
@@ -70,3 +78,11 @@ export interface Appointment {
   note?: string;
 }
 export type AppointmentFormData = z.infer<typeof appointmentSchema>;
+export const imageFileSchema = z
+  .instanceof(File)
+  .refine((file) => file.type.startsWith("image/"), {
+    message: "Only image files are allowed",
+  })
+  .refine((file) => file.size <= 3 * 1024 * 1024, {
+    message: "Image must be smaller than 3MB",
+  });

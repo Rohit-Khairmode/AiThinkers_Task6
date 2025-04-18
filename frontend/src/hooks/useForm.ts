@@ -2,8 +2,12 @@ import {
   FormErrors,
   UserRegistrationFormData,
 } from "@/components/auth/RegistrationForm";
+import api from "@/lib/api";
+import { useAppDispatch } from "@/lib/hooks";
+import { setUser } from "@/store/auth/authSlice";
 import { SelectChangeEvent } from "@mui/material";
 import { ChangeEvent, useState } from "react";
+import toast from "react-hot-toast";
 
 export function useForm() {
   const [formData, setFormData] = useState<Partial<UserRegistrationFormData>>({
@@ -11,7 +15,6 @@ export function useForm() {
     lastName: "",
     dateOfBirth: "",
     mobileNumber: "",
-    gender: "prefer not to say",
     line1: "",
     line2: "",
     city: "",
@@ -20,9 +23,10 @@ export function useForm() {
     country: "",
     email: "",
     password: "",
-    preferredCommunication: "email",
+    // preferredCommunication: "",
     termsAccepted: true,
   });
+  const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
   const [profileImagePreview, setprofileImagePreview] = useState<string | null>(
     null
@@ -48,6 +52,7 @@ export function useForm() {
   };
   const handleSelectChange = (e: SelectChangeEvent<string>): void => {
     const { name, value } = e.target;
+
     if (name) {
       setFormData((prev) => ({ ...prev, [name]: value }));
 
@@ -82,6 +87,35 @@ export function useForm() {
       }
     }
   };
+  async function handleProfileImageUpload() {
+    setLoading(true);
+    try {
+      const curData = new FormData();
+      if (formData.profileImage instanceof File) {
+        curData.append("profileImage", formData.profileImage);
+      } else {
+        toast.error("Please select a valid profile image.");
+      }
+      const res = await api.put(
+        "/users/update/profile-image",
+        { profileImage: formData.profileImage },
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      toast.success("Profile image updated successfully");
+      dispatch(
+        setUser({ ...res.data.data, profileImage: res.data.data.profileImage })
+      );
+    } catch (error) {
+      console.error("Error updating profile image:", error);
+      toast.error("Failed to update profile image");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return {
     formData,
@@ -94,5 +128,6 @@ export function useForm() {
     handleSelectChange,
     profileImagePreview,
     handleprofileImageChange,
+    handleProfileImageUpload,
   };
 }

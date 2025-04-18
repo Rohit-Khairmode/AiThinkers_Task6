@@ -1,47 +1,25 @@
 "use client";
 
-import type React from "react";
-import { useMemo, useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  Box,
-  Container,
-  Paper,
-  Tabs,
-  Tab,
-  TextField,
-  IconButton,
-  Avatar,
-  Menu,
-  MenuItem,
-  Divider,
-  Select,
-  FormControl,
-  InputLabel,
-  type SelectChangeEvent,
-} from "@mui/material";
-import {
-  KeyboardArrowDown,
-  LocationOn,
-  Search,
-  CalendarMonth,
-  Description,
-  Event,
-  MedicalInformation,
-  ArrowForward,
-} from "@mui/icons-material";
-import Image from "next/image";
-import { z } from "zod";
-import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { getNextUpcomingAppointment } from "@/store/appointment/slice";
-import AppointmentsList, {
-  AppointmentItem,
-} from "./appointment/AppointmetList";
+import { ArrowForward, Event, KeyboardArrowDown } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Container,
+  Paper,
+  Tab,
+  Tabs,
+  Typography,
+  type SelectChangeEvent,
+} from "@mui/material";
+import type React from "react";
+import { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import { z } from "zod";
+import AppointmentsList from "./appointment/AppointmetList";
 import LatestAppointmentCard from "./appointment/LatestAppointmentCard";
+import { styles } from "@/app/dashboard/dashboard.styles";
 
 // Define the schema for appointment data
 const AppointmentSchema = z.object({
@@ -50,126 +28,94 @@ const AppointmentSchema = z.object({
   location: z.string().optional(),
 });
 
-type AppointmentType = z.infer<typeof AppointmentSchema>;
+const tabs = ["Dashboard", "Appointments"];
 
 export default function Dashboard() {
   const [tabValue, setTabValue] = useState(0);
-  const [appointmentType, setAppointmentType] = useState("");
-  const user = useSelector((state: RootState) => state.auth.user);
+  const user = useSelector((state: RootState) => state?.auth?.user);
   const list = useSelector((state: RootState) => state.appointment.list);
   const latestAppointments = useMemo(
     () => getNextUpcomingAppointment(list),
     [list]
   );
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
-  const handleAppointmentTypeChange = (event: SelectChangeEvent) => {
-    setAppointmentType(event.target.value);
-  };
-
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: "divider",
-          backgroundColor: "white",
-        }}
-      >
+    <>
+      <Box className={styles.tabsBox}>
         <Tabs
           value={tabValue}
           aria-label="navigation tabs"
-          sx={{ "& .MuiTab-root": { textTransform: "none" } }}
+          sx={{
+            "& .MuiTab-root": { textTransform: "none" },
+          }}
         >
-          <Tab
-            onClick={() => setTabValue(0)}
-            label="Dashboard"
-            sx={{ fontWeight: "bold" }}
-          />
-          <Tab
-            onClick={() => setTabValue(1)}
-            label="Appointments"
-            iconPosition="end"
-          />
-          <Tab
-            label="Health Chart"
-            icon={<KeyboardArrowDown fontSize="small" />}
-            iconPosition="end"
-          />
-          <Tab label="Pay My Bill" />
-          <Tab
-            label="Documents"
-            icon={<KeyboardArrowDown fontSize="small" />}
-            iconPosition="end"
-          />
+          {tabs.map((cur, i) => {
+            return (
+              <Tab
+                key={i}
+                onClick={() => setTabValue(i)}
+                label={cur}
+                sx={{ fontWeight: "bold" }}
+              />
+            );
+          })}
         </Tabs>
       </Box>
 
-      <Box sx={{ backgroundColor: "#00BCD4", py: 4, px: 8 }}>
-        <Typography variant="h4" color="white">
-          Hi, {user?.firstName} {user?.lastName},{" "}
+      <Box className={styles.bannerBox}>
+        <Typography className={styles.bannerText}>
+          Hi, {user?.firstName} {user?.lastName},
           {tabValue === 0
             ? "Welcome to your dashboard"
             : "Check all your appointments"}
         </Typography>
       </Box>
 
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Container sx={{ mt: 4 }}>
         {tabValue === 0 && (
-          <Box
-            sx={{
-              display: "flex",
-              gap: 3,
-              flexWrap: { xs: "wrap", md: "nowrap" },
-            }}
-          >
+          <Paper className={styles.elevatedBox}>
+            <Box className={styles.contentTitle}>
+              <Event sx={{ color: "#00BCD4", mr: 1 }} />
+              <Typography variant="h6">Latest Appointment</Typography>
+            </Box>
+            <Box>
+              {latestAppointments ? (
+                <LatestAppointmentCard />
+              ) : (
+                <>
+                  <Typography variant="h6">No upcoming appointments</Typography>
+                </>
+              )}
+            </Box>
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "column",
-                gap: 3,
-                flexGrow: 2,
+                justifyContent: "flex-end",
+                mt: 2,
               }}
             >
-              <Paper sx={{ p: 3 }}>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-                  <Event sx={{ color: "#00BCD4", mr: 1 }} />
-                  <Typography variant="h6">Latest Appointment</Typography>
-                </Box>
-                <Box sx={{ textAlign: "center", py: 2 }}>
-                  {latestAppointments ? (
-                    <LatestAppointmentCard />
-                  ) : (
-                    <>
-                      <Typography variant="h6">
-                        No upcoming appointments
-                      </Typography>
-                    </>
-                  )}
-                </Box>
-                <Box
-                  sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}
-                  onClick={() => {
-                    setTabValue(1);
-                  }}
-                >
-                  <Button
-                    endIcon={<ArrowForward />}
-                    sx={{ color: "#00BCD4", textTransform: "none" }}
-                  >
-                    View All Appointments
-                  </Button>
-                </Box>
-              </Paper>
+              <Button
+                endIcon={<ArrowForward />}
+                sx={{
+                  color: "#00BCD4",
+                  textTransform: "none",
+                  fontWeight: 700,
+                  ":hover": {
+                    backgroundColor: "#fff",
+                  },
+                }}
+                onClick={() => {
+                  setTabValue(1);
+                }}
+              >
+                View All Appointments
+              </Button>
             </Box>
-          </Box>
+          </Paper>
         )}
         {tabValue === 1 && (
-          <Paper sx={{ p: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+          <Paper className={styles.elevatedBox}>
+            <Box className={styles.contentTitle}>
               <Event sx={{ color: "#00BCD4", mr: 1 }} />
               <Typography variant="h6">Appointments List</Typography>
             </Box>
@@ -177,6 +123,6 @@ export default function Dashboard() {
           </Paper>
         )}
       </Container>
-    </Box>
+    </>
   );
 }

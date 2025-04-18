@@ -28,7 +28,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/dashboard/profile"
+    "src/app/dashboard/profile",
+    "src/components/auth/auth.styles.js",
+    "tailwind.config.js"
   ],
   "exclude": ["node_modules"]
 }

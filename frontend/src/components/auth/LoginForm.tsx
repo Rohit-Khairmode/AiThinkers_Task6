@@ -1,21 +1,16 @@
 "use client";
 import api from "@/lib/api";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import {
-  Box,
-  Button,
-  Divider,
-  IconButton,
-  InputAdornment,
-  Link,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { sleep } from "@/lib/sleep";
+import { setUser } from "@/store/auth/authSlice";
+import { Box, Button, Divider, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
-import { setUser } from "@/store/auth/authSlice";
+import { CustomTextInput } from "../ui/CustomTextInput";
+import PasswordField from "../ui/PasswordField";
+import RedirectLink from "../ui/RedirectLink";
+import AuthForm from "./AuthForm";
 
 export default function LoginForm() {
   const [loading, setLoading] = useState(false);
@@ -29,6 +24,7 @@ export default function LoginForm() {
   const dispatch = useDispatch();
   const handleLogin = async () => {
     setLoading(true);
+    await sleep(1000);
     try {
       const response = await api.post("/users/login", formData, {
         headers: {
@@ -36,85 +32,49 @@ export default function LoginForm() {
         },
       });
       toast.success("Login successful");
-      console.log("Login response:", response.data.data);
       dispatch(setUser(response.data.data));
       router.push("/dashboard");
     } catch (error: any) {
-      console.error("Error during login:", error);
-      setError(error.response?.data?.message || "An error occurred");
+      setError(
+        error.response?.data?.message || error.message || "An error occurred"
+      );
     } finally {
       setLoading(false);
     }
   };
-
   return (
-    <Box
-      width={350}
-      p={4}
-      borderRadius={2}
-      boxShadow={3}
-      bgcolor="#fff"
-      display="flex"
-      flexDirection="column"
-      gap={2}
-      justifySelf="center"
+    <AuthForm
+      formTitle="Patient Login"
+      buttonLabel="Login"
+      loading={loading}
+      onClick={handleLogin}
+      error={error}
+      Footer={<LoginFooter onClick={() => router.push("/register")} />}
     >
-      <Typography variant="h5" fontWeight="bold">
-        Patient Login
-      </Typography>
-      <Typography fontSize={14} color="#f00">
-        {error}
-      </Typography>
-
-      <TextField
+      <CustomTextInput
+        name="username"
         label="Username*"
         value={formData.username}
         onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-        fullWidth
-        variant="outlined"
       />
-
-      <TextField
+      <PasswordField
         label="Password*"
-        type={showPassword ? "text" : "password"}
-        fullWidth
         value={formData.password}
-        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-        variant="outlined"
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={() => setShowPassword((prev) => !prev)}>
-                {showPassword ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
+        handleChange={(e) =>
+          setFormData({ ...formData, password: e.target.value })
+        }
+        showPassword={showPassword}
+        setShowPassword={setShowPassword}
       />
-
       <Box display="flex" justifyContent="flex-end">
-        <Link href="/forgotPassword" underline="hover" fontSize={14}>
-          Forgot Password?
-        </Link>
+        <RedirectLink href="/forgotPassword">Forgot Password?</RedirectLink>
       </Box>
-
-      <Button
-        variant="contained"
-        fullWidth
-        sx={{
-          backgroundColor: "#ffdd00",
-          color: "black",
-          borderRadius: 10,
-          fontWeight: "bold",
-          "&:hover": {
-            backgroundColor: "#e6c700",
-          },
-        }}
-        onClick={handleLogin}
-      >
-        {loading ? "loading..." : "Login"}
-      </Button>
-
+    </AuthForm>
+  );
+}
+function LoginFooter({ onClick }: { onClick: () => void }) {
+  return (
+    <>
       <Divider sx={{ my: 1 }} />
 
       <Typography textAlign="center" fontSize={14}>
@@ -128,10 +88,10 @@ export default function LoginForm() {
           borderRadius: 10,
           fontWeight: "bold",
         }}
-        onClick={() => router.push("/register")}
+        onClick={onClick}
       >
         Create Account
       </Button>
-    </Box>
+    </>
   );
 }

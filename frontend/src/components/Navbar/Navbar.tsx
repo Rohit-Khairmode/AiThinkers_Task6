@@ -8,10 +8,13 @@ import {
   ExitToApp,
   KeyboardArrowDown,
 } from "@mui/icons-material";
+import AddIcon from "@mui/icons-material/Add";
 import {
   AppBar,
+  Avatar,
   Box,
   Button,
+  ListItem,
   ListItemIcon,
   Menu,
   MenuItem,
@@ -24,7 +27,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import AppointmentForm from "./appointment/AppointmentForm";
+import AppointmentForm from "../appointment/AppointmentForm";
+import { styles } from "./Navbar.styles";
+import PrimaryButton from "../ui/PrimaryButton";
 
 function Navbar() {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -60,46 +65,35 @@ function Navbar() {
       position="static"
       color="default"
       elevation={0}
-      sx={{ backgroundColor: "white" }}
+      sx={{ padding: "8px" }}
+      className={styles.appBar}
     >
       <Toolbar>
-        <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+        <Box className={styles.imgBox}>
           <Link href={"/"}>
             <Image
-              src="./logo.svg"
-              alt="Clarkson Eyecare"
+              src="/ai-small-2.webp"
+              alt="Company logo"
               width={150}
               height={50}
             />
           </Link>
         </Box>
         {user && (
-          <>
-            <Button
-              variant="contained"
-              sx={{
-                borderRadius: 28,
-                px: 3,
-                backgroundColor: "#FFD700",
-                color: "black",
-                "&:hover": {
-                  backgroundColor: "#E6C200",
-                },
-              }}
+          <Box className={styles.avatarBox}>
+            <PrimaryButton
+              fullWidth={false}
+              label="Appointment"
+              className="text-base hidden md:flex"
+              loading={false}
               onClick={() => setOpenAppointmentForm(true)}
-            >
-              Insert Appointment
-            </Button>
-            <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
-              <Image
+              startIcon={<AddIcon />}
+            />
+            <Box className={styles.avatarBox} onClick={handleClick}>
+              <Avatar
+                alt="Remy Sharp"
+                sx={{ width: 56, height: 56 }}
                 src={user?.profileImage || "/profile.webp"}
-                alt="user avatar"
-                width={50}
-                height={50}
-                style={{
-                  borderRadius: "50%",
-                }}
-                onClick={handleClick}
               />
               <Box
                 sx={{
@@ -109,7 +103,7 @@ function Navbar() {
                   cursor: "pointer",
                   flexGrow: 1,
                 }}
-                onClick={handleClick}
+                className={styles.userName}
               >
                 <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
                   {user.username}
@@ -118,7 +112,6 @@ function Navbar() {
               </Box>
             </Box>
 
-            {/* Dropdown Menu */}
             <Menu
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
@@ -128,6 +121,18 @@ function Navbar() {
                 horizontal: "center",
               }}
             >
+              <MenuItem
+                onClick={() => {
+                  handleClose();
+                  setOpenAppointmentForm(true);
+                }}
+                className=" md:hidden flex"
+              >
+                <ListItemIcon>
+                  <AddIcon />
+                </ListItemIcon>
+                Appointment
+              </MenuItem>
               <MenuItem
                 onClick={() => {
                   handleClose();
@@ -157,7 +162,7 @@ function Navbar() {
                 Logout
               </MenuItem>
             </Menu>
-          </>
+          </Box>
         )}
       </Toolbar>
       {user && (

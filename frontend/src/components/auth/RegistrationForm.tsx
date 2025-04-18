@@ -1,24 +1,19 @@
 "use client";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import {
   Box,
   Button,
   FormControlLabel,
   FormHelperText,
-  IconButton,
-  InputAdornment,
   Radio,
   RadioGroup,
   styled,
-  TextField,
   Typography,
 } from "@mui/material";
 
 import { useForm } from "@/hooks/useForm";
 import api from "@/lib/api";
 import { userRegistrationSchema } from "@/lib/zodSchemas";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
@@ -26,6 +21,11 @@ import { z } from "zod";
 import ModalWindow from "../Modal";
 import UserPublicDetails from "../UserPublicDetails";
 import PasswordField from "../ui/PasswordField";
+import PrimaryButton from "../ui/PrimaryButton";
+import RedirectLink from "../ui/RedirectLink";
+import { styles } from "./auth.styles";
+import RadioButtonGroup from "../ui/RadioButtonGroup";
+import { preferredCommunicationOptions } from "@/lib/constant";
 export const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -69,7 +69,6 @@ export default function UserRegistrationForm() {
     e.preventDefault();
     try {
       const validatedData = userRegistrationSchema.parse(formData);
-      console.log("Form submitted:", validatedData);
       const res = await api.post("/users/register", validatedData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -98,7 +97,7 @@ export default function UserRegistrationForm() {
   };
 
   return (
-    <Box sx={{ padding: "32px", justifySelf: "center", width: "75%" }}>
+    <Box className={styles.registerationFormContainer}>
       <Box bgcolor={"white"} padding={"16px"} borderRadius={2}>
         <Box sx={{ mb: 1 }}>
           <Typography
@@ -127,57 +126,20 @@ export default function UserRegistrationForm() {
               setShowPassword={setShowPassword}
               error={errors.password}
             />
-            {/* <TextField
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              variant="outlined"
-              onChange={handleChange}
-              name="password"
-              size="small"
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword((prev) => !prev)}
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              error={!!errors.password}
-              helperText={errors.password}
-              fullWidth
-              sx={{ mb: 2 }}
-            /> */}
           </UserPublicDetails>
 
           <Box sx={{ mb: 3 }}>
             <Typography variant="body2" sx={{ mb: 2 }}>
               Preferred mode of Communication
             </Typography>
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Box className={styles.registerRadioButtons}>
               <RadioGroup
                 name="preferredCommunication"
                 value={formData.preferredCommunication}
                 onChange={handleChange}
                 row
               >
-                <FormControlLabel
-                  value="email"
-                  control={<Radio />}
-                  label="Email"
-                />
-                <FormControlLabel
-                  value="phone"
-                  control={<Radio />}
-                  label="Phone"
-                />
-                <FormControlLabel
-                  value="both"
-                  control={<Radio />}
-                  label="Both"
-                />
+                <RadioButtonGroup options={preferredCommunicationOptions} />
               </RadioGroup>
               {errors.preferredCommunication && (
                 <FormHelperText error>
@@ -190,7 +152,8 @@ export default function UserRegistrationForm() {
                 role={undefined}
                 variant="contained"
                 tabIndex={-1}
-                startIcon={<CloudUploadIcon />}
+                size="small"
+                startIcon={<CloudUploadIcon sx={{ height: 24, width: 24 }} />}
               >
                 {profileImagePreview ? (
                   <img
@@ -199,7 +162,7 @@ export default function UserRegistrationForm() {
                     style={{ width: 50, height: 50, borderRadius: "50%" }}
                   />
                 ) : (
-                  "Upload Profile Photo"
+                  "Upload Photo"
                 )}
                 <VisuallyHiddenInput
                   type="file"
@@ -211,43 +174,21 @@ export default function UserRegistrationForm() {
           </Box>
 
           <Box sx={{ mb: 3 }}>
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{
-                bgcolor: "#ffdd00",
-                color: "black",
-                "&:hover": {
-                  bgcolor: "#e6c700",
-                },
-                py: 1.5,
-                borderRadius: "20px",
-              }}
-              fullWidth
-            >
-              {loading ? "loading..." : "Register"}
-            </Button>
+            <PrimaryButton label="Register" loading={loading} />
           </Box>
 
           <Box sx={{ textAlign: "center", mb: 2 }}>
             <Typography variant="body2">
-              By registering, you accept to our{" "}
-              <Link href="/terms" style={{ color: "#0cbfce" }}>
-                Terms & Conditions
-              </Link>{" "}
-              and{" "}
-              <Link href="/privacy" style={{ color: "#0cbfce" }}>
-                Privacy Policy
-              </Link>
+              By registering, you accept to our
+              <RedirectLink href="/terms">Terms & Conditions</RedirectLink> and
+              <RedirectLink href="/privacy">Privacy Policy</RedirectLink>
             </Typography>
           </Box>
 
           <Box sx={{ textAlign: "center" }}>
             <Typography variant="body2">
-              Already have an account?{" "}
-              <Link href="/" style={{ color: "#0cbfce" }}>
-                Login
-              </Link>
+              Already have an account?
+              <RedirectLink href="/">Login</RedirectLink>
             </Typography>
           </Box>
         </form>
@@ -285,27 +226,14 @@ export default function UserRegistrationForm() {
         <Typography variant="body2" sx={{ mb: 3, color: "text.secondary" }}>
           Please remember this for future logins.
         </Typography>
-
-        <Button
-          variant="contained"
+        <PrimaryButton
+          label="close"
           onClick={() => {
             setUserName("");
             router.replace("/");
           }}
-          sx={{
-            bgcolor: "#ffdd00",
-            color: "black",
-            fontWeight: 600,
-            px: 4,
-            py: 1.2,
-            borderRadius: "12px",
-            "&:hover": {
-              bgcolor: "#e6c700",
-            },
-          }}
-        >
-          Close
-        </Button>
+          loading={false}
+        />
       </ModalWindow>
     </Box>
   );

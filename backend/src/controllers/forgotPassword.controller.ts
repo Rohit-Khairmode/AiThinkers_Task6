@@ -8,7 +8,6 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { passwordResetSchema } from "../utils/zodSchemas";
 
 export const forgotPassword: RequestHandler = asyncHandler(async (req, res) => {
-  console.log("req.body", req.body);
   const { username } = req.body;
   if (!username) {
     throw new ApiError(400, "username is required");
@@ -39,7 +38,6 @@ export const resetPassword: RequestHandler = asyncHandler(async (req, res) => {
         error.message,
       ])
     );
-    console.log("Validation errors:", errorMessages);
     throw new ApiError(400, "Validation error", errorMessages); //400 bad request
   }
   const { token, password } = req.body;

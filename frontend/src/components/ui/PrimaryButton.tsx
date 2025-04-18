@@ -1,14 +1,24 @@
 import { Button } from "@mui/material";
 
+export type PrimaryButtonProps = {
+  label: string;
+  onClick?: (() => void) | ((e: React.FormEvent) => Promise<void>);
+  style?: React.CSSProperties;
+  loading: boolean;
+  fullWidth?: boolean;
+  className?: string;
+  startIcon?: React.ReactNode;
+};
+
 function PrimaryButton({
   label,
   onClick,
   style,
-}: {
-  label: string;
-  onClick?: () => void;
-  style?: React.CSSProperties;
-}) {
+  loading,
+  fullWidth = true,
+  className,
+  startIcon,
+}: PrimaryButtonProps) {
   return (
     <Button
       onClick={onClick}
@@ -16,7 +26,7 @@ function PrimaryButton({
       variant="contained"
       sx={{
         bgcolor: "#ffdd00",
-        color: "black",
+        color: "#444",
         "&:hover": {
           bgcolor: "#e6c700",
         },
@@ -24,7 +34,11 @@ function PrimaryButton({
         borderRadius: "20px",
         ...style,
       }}
-      fullWidth
+      fullWidth={fullWidth}
+      loading={loading}
+      disabled={loading}
+      className={className}
+      startIcon={startIcon}
     >
       {label}
     </Button>

@@ -38,7 +38,6 @@ function PasswordField({
       helperText={error}
       fullWidth
       sx={{ mb: 2 }}
-      required
     />
   );
 }

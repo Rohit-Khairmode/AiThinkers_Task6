@@ -49,6 +49,8 @@ AiThinkers_Task6/
 
 ## Installation (run command in root directory)
 
+## Note: Styles added via className prop has highest priority
+
 ```bash
 pnpm install
 ```

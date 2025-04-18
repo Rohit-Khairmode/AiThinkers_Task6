@@ -2,6 +2,7 @@
 import {
   Appointment,
   deleteAppointment,
+  errorAddAppointment,
   fetchAppointmentsRequest,
   getNextUpcomingAppointment,
   updateAppointment,
@@ -27,10 +28,11 @@ import { useDispatch, useSelector } from "react-redux";
 import ModalWindow from "../Modal";
 import EditAppointmentForm from "./EditAppointmentForm";
 import DeleteAppointmentConfirm from "./DeleteAppointmentConfirm";
+import toast from "react-hot-toast";
 
 const AppointmentsList = () => {
   const dispatch: AppDispatch = useDispatch();
-  const list = useSelector((state: RootState) => state.appointment.list);
+  const { list, error } = useSelector((state: RootState) => state.appointment);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [appointmentToDelete, setAppointmentToDelete] =
     useState<Appointment | null>(null);
@@ -41,7 +43,10 @@ const AppointmentsList = () => {
     useState<Appointment | null>(null);
 
   useEffect(() => {
-    if (!list) dispatch(fetchAppointmentsRequest());
+    if (!list) {
+      dispatch(fetchAppointmentsRequest());
+      if (error.fetchAppointments) toast.error(error.fetchAppointments);
+    }
     setLoading(false);
   }, [dispatch]);
 
@@ -60,6 +65,8 @@ const AppointmentsList = () => {
     dispatch(updateAppointment(updated));
     setEditOpen(false);
     setSelectedAppointment(null);
+    if (error.updateAppointment) toast.error(error.updateAppointment);
+    else toast.success("Appointment Updated");
   };
 
   const handleCancelEdit = () => {
@@ -80,6 +87,8 @@ const AppointmentsList = () => {
     }
     setDeleteOpen(false);
     setAppointmentToDelete(null);
+    if (error.deleteAppointment) toast.error(error.deleteAppointment);
+    else toast.success("Appointment Deleted Successfully");
   };
 
   const handleCancelDelete = () => {
@@ -91,16 +100,23 @@ const AppointmentsList = () => {
 
   return (
     <>
-      <TableContainer component={Paper}>
-        <Table>
+      <TableContainer
+        component={Paper}
+        sx={{
+          width: "100%",
+          overflowX: "auto",
+        }}
+      >
+        <Table sx={{ minWidth: 670 }}>
           <TableHead>
-            <TableRow>
+            <TableRow className="">
               <TableCell>Sr.No</TableCell>
               <TableCell>Service Type</TableCell>
               <TableCell>Provider</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Note</TableCell>
-              <TableCell>Date & Time</TableCell>
+              <TableCell>Date </TableCell>
+              <TableCell>Time</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -171,10 +187,34 @@ export const AppointmentItem = ({
         </Typography>
       </TableCell>
       <TableCell>
-        {new Date(appointment.scheduledAt).toLocaleString("en-US", {
-          dateStyle: "medium",
-          timeStyle: "short",
-        })}
+        <Typography
+          variant="body2"
+          sx={{
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            maxWidth: 300,
+          }}
+        >
+          {new Date(appointment.scheduledAt).toLocaleString("en-US", {
+            dateStyle: "medium",
+            // timeStyle: "short",
+          })}
+        </Typography>
+      </TableCell>
+      <TableCell>
+        <Typography
+          variant="body2"
+          sx={{
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            maxWidth: 300,
+          }}
+        >
+          {new Date(appointment.scheduledAt).toLocaleString("en-US", {
+            // dateStyle: "medium",
+            timeStyle: "short",
+          })}
+        </Typography>
       </TableCell>
       {handleEdit && handleDelete && (
         <TableCell align="right">

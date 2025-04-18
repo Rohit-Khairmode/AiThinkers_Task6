@@ -1,10 +1,11 @@
 "use client";
+import { styles } from "@/app/dashboard/dashboard.styles";
 import { RootState } from "@/store";
 import { getNextUpcomingAppointment } from "@/store/appointment/slice";
 import EventIcon from "@mui/icons-material/Event";
 import PersonIcon from "@mui/icons-material/Person";
 import PlaceIcon from "@mui/icons-material/Place";
-import { Card, CardContent, Chip, Stack, Typography } from "@mui/material";
+import { Box, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
 
 const LatestAppointmentCard = () => {
@@ -28,47 +29,47 @@ const LatestAppointmentCard = () => {
     appointment;
 
   return (
-    <Card
-      sx={{
-        borderRadius: 3,
-        p: 2,
-        boxShadow: 3,
-        background: "#f9f9f9",
-        minWidth: 300,
-      }}
-    >
+    <Card className={styles.contentCard}>
       <CardContent>
-        <Stack spacing={1} direction={"row"}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <PersonIcon fontSize="small" />
-            <Typography>{serviceProvider}</Typography>
-          </Stack>
+        <Stack className={styles.contentLayout}>
+          <Box className={styles.serviceProviderBox}>
+            <IconTextBox text={serviceProvider}>
+              <PersonIcon className={styles.icon} />
+            </IconTextBox>
 
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <PlaceIcon fontSize="small" />
-            <Chip label={appointmentType} size="small" color="primary" />
-          </Stack>
+            <IconTextBox>
+              <PlaceIcon className={styles.icon} />
+              <Chip
+                className={styles.iconText}
+                label={appointmentType}
+                size="medium"
+                color="primary"
+              />
+            </IconTextBox>
 
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <EventIcon fontSize="small" />
-            <Typography>
-              {new Date(scheduledAt).toLocaleString("en-US", {
+            <IconTextBox
+              text={new Date(scheduledAt).toLocaleString("en-US", {
                 dateStyle: "medium",
                 timeStyle: "short",
               })}
-            </Typography>
-          </Stack>
+            >
+              <EventIcon fontSize="small" />
+            </IconTextBox>
+          </Box>
+          <Box className={` flex gap-2 flex-wrap justify-center`}>
+            <IconTextBox text={serviceType}>
+              <Typography fontWeight={700} className={styles.iconText}>
+                Service:
+              </Typography>
+            </IconTextBox>
 
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography fontWeight={500}>Service:</Typography>
-            <Typography>{serviceType}</Typography>
-          </Stack>
-
-          {note && (
-            <Typography variant="body1" textAlign={"start"}>
-              Details: {note}
-            </Typography>
-          )}
+            {note && (
+              <Typography variant="body1" textAlign={"start"}>
+                <span className={`font-bold ${styles.iconText}`}>Details:</span>
+                <span className={styles.iconText}>{note}</span>
+              </Typography>
+            )}
+          </Box>
         </Stack>
       </CardContent>
     </Card>
@@ -76,3 +77,17 @@ const LatestAppointmentCard = () => {
 };
 
 export default LatestAppointmentCard;
+function IconTextBox({
+  children,
+  text,
+}: {
+  children: React.ReactNode;
+  text?: string;
+}) {
+  return (
+    <Stack className={styles.iconTextBox}>
+      {children}
+      <Typography className={styles.iconText}>{text}</Typography>
+    </Stack>
+  );
+}

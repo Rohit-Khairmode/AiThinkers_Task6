@@ -10,6 +10,16 @@ import {
 } from "@mui/material";
 import { ChangeEvent } from "react";
 import { FormErrors, UserRegistrationFormData } from "./auth/RegistrationForm";
+import { CustomTextInput } from "./ui/CustomTextInput";
+import CustomSelect from "./ui/CustomSelect";
+import { styles } from "./auth/auth.styles";
+
+const genderOptions = [
+  { value: "male", title: "Male" },
+  { value: "female", title: "Female" },
+  { value: "other", title: "Other" },
+  { value: "prefer not to say", title: "Prefer not to say" },
+];
 
 function UserPublicDetails({
   formData,
@@ -26,8 +36,8 @@ function UserPublicDetails({
 }) {
   return (
     <>
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <SmallTextInput
+      <FieldsContainer>
+        <CustomTextInput
           name="firstName"
           label="First Name*"
           value={formData.firstName}
@@ -36,7 +46,7 @@ function UserPublicDetails({
           helperText={errors.firstName}
         />
 
-        <SmallTextInput
+        <CustomTextInput
           name="lastName"
           label="Last Name*"
           value={formData.lastName}
@@ -44,9 +54,9 @@ function UserPublicDetails({
           error={!!errors.lastName}
           helperText={errors.lastName}
         />
-      </Box>
+      </FieldsContainer>
 
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+      <FieldsContainer>
         <TextField
           name="dateOfBirth"
           label="Date of Birth*"
@@ -64,7 +74,7 @@ function UserPublicDetails({
           fullWidth
         />
 
-        <SmallTextInput
+        <CustomTextInput
           name="mobileNumber"
           label="Mobile Number*"
           value={formData.mobileNumber}
@@ -72,30 +82,22 @@ function UserPublicDetails({
           error={!!errors.mobileNumber}
           helperText={errors.mobileNumber}
         />
+      </FieldsContainer>
+
+      <Box sx={{ mb: 1 }}>
+        <CustomSelect
+          options={genderOptions}
+          name="gender"
+          value={formData.gender || ""}
+          handleSelectChange={(e: SelectChangeEvent<string>) =>
+            handleSelectChange(e)
+          }
+          error={errors.gender}
+        />
       </Box>
 
-      <Box sx={{ mb: 2 }}>
-        <FormControl fullWidth error={!!errors.gender}>
-          <InputLabel id="gender-label">Gender*</InputLabel>
-          <Select
-            labelId="gender-label"
-            name="gender"
-            value={formData.gender}
-            onChange={handleSelectChange}
-            label="Gender*"
-            size="small"
-          >
-            <MenuItem value="male">Male</MenuItem>
-            <MenuItem value="female">Female</MenuItem>
-            <MenuItem value="other">Other</MenuItem>
-            <MenuItem value="prefer not to say">Prefer not to say</MenuItem>
-          </Select>
-          {errors.gender && <FormHelperText>{errors.gender}</FormHelperText>}
-        </FormControl>
-      </Box>
-
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <SmallTextInput
+      <FieldsContainer>
+        <CustomTextInput
           name="line1"
           label="Address Line 1*"
           value={formData.line1}
@@ -104,7 +106,7 @@ function UserPublicDetails({
           helperText={errors.line1}
         />
 
-        <SmallTextInput
+        <CustomTextInput
           name="line2"
           label="Address Line 2"
           value={formData.line2}
@@ -112,10 +114,7 @@ function UserPublicDetails({
           error={!!errors.line2}
           helperText={errors.line2}
         />
-      </Box>
-
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <SmallTextInput
+        <CustomTextInput
           name="city"
           label="City*"
           value={formData.city}
@@ -123,7 +122,10 @@ function UserPublicDetails({
           error={!!errors.city}
           helperText={errors.city}
         />
-        <SmallTextInput
+      </FieldsContainer>
+
+      <FieldsContainer>
+        <CustomTextInput
           name="state"
           label="state*"
           value={formData.state}
@@ -132,7 +134,7 @@ function UserPublicDetails({
           helperText={errors.state}
         />
 
-        <SmallTextInput
+        <CustomTextInput
           name="zip"
           label="ZIP*"
           value={formData.zip}
@@ -140,7 +142,7 @@ function UserPublicDetails({
           error={!!errors.zip}
           helperText={errors.zip}
         />
-        <SmallTextInput
+        <CustomTextInput
           name="country"
           label="Country*"
           value={formData.country}
@@ -148,10 +150,10 @@ function UserPublicDetails({
           error={!!errors.country}
           helperText={errors.country}
         />
-      </Box>
+      </FieldsContainer>
 
-      <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
-        <SmallTextInput
+      <FieldsContainer>
+        <CustomTextInput
           name="email"
           label="Email*"
           type="email"
@@ -161,45 +163,17 @@ function UserPublicDetails({
           helperText={errors.email}
         />
         {children}
-      </Box>
+      </FieldsContainer>
     </>
   );
 }
-export function SmallTextInput({
-  name,
-  label,
-  value,
-  onChange,
-  error,
-  helperText,
-  type,
-}: {
-  name: string;
-  label: string;
-  value: string | undefined;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  error?: boolean;
-  type?: string;
-  helperText?: string;
-}) {
-  return (
-    <TextField
-      name={name}
-      label={label}
-      value={value}
-      onChange={onChange}
-      error={error}
-      helperText={helperText}
-      size="small"
-      sx={{
-        "& .MuiInputBase-input::placeholder": {
-          color: "#90A4AE", // muted gray
-          opacity: 1, // required to override default MUI styles
-        },
-      }}
-      type={type}
-      fullWidth
-    />
-  );
-}
+
 export default UserPublicDetails;
+
+export const FieldsContainer = function ({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <Box className={styles.registetrFieldsContainer}>{children}</Box>;
+};

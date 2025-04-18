@@ -17,7 +17,6 @@ const fileFilter = (
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) => {
-  console.log("file on backend", file);
   if (file.mimetype.startsWith("image/")) {
     cb(null, true); // Accept the file
   } else {

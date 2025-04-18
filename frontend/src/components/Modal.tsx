@@ -22,6 +22,7 @@ const ModalWindow = ({
         onClose={() => close(false)}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
+        className=" mx-2 "
       >
         <Box
           bgcolor={"background.default"}
@@ -30,7 +31,7 @@ const ModalWindow = ({
           borderRadius={5}
           sx={{
             outline: "none",
-            minWidth: 400,
+            minWidth: { sm: 400 },
           }}
         >
           {children}
